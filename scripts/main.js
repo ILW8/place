@@ -217,7 +217,7 @@ function updateTransformVP() {
 
 function parseMeta(data) {
 	var key = new URLSearchParams(location.search).get("d")
-	var meta = data[key] || data.base
+	var meta = data[key] || data["2022"]
 
 	main.meta = meta
 	main.scale = meta.scale
