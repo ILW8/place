@@ -13,6 +13,7 @@ dom.ready(function() {
 
 	main.brate = new Bar(dom.one('.rate'))
 	main.bseek = new Bar(dom.one('.seek'))
+	main.timeDisplay = document.getElementById("timestamp_display")
 
 	main.get   = new Loader
 	main.timer = new Timer(tick)
@@ -111,6 +112,8 @@ function tick(t) {
 	}
 
 
+
+
 	if(t < 0) {
 		t = main.timer.time = 0
 	}
@@ -129,10 +132,18 @@ function tick(t) {
 	,   step = frames / Math.abs(frames)
 	,   end = main.frame + frames
 
+	let updateTimestamp = -1;
 	for(var i = main.frame; i !== end; i += step) {
 		main.grid[main.hitCoords[i]] = hits[i]
+		if (main.timestamps.hasOwnProperty(i)) {
+			updateTimestamp = main.timestamps[i];
+		}
 	}
 	main.frame = end
+
+	if (updateTimestamp > 0) {
+		dom.text(main.timeDisplay, new Date(updateTimestamp).toISOString())
+	}
 
 	var d = main.idat.data
 	for(var i = 0; i < main.grid.length; i++) {
@@ -215,9 +226,19 @@ function updateTransformVP() {
 	}
 }
 
+function parseTimestamps(data) {
+	main.timestamps = data
+}
+
 function parseMeta(data) {
 	var key = new URLSearchParams(location.search).get("d")
 	var meta = data[key] || data["2022"]
+
+	if (meta.hasOwnProperty("timestamps")) {
+		main.get.json(meta["timestamps"]).defer.then(parseTimestamps)
+	} else {
+		main.timestamps = {}
+	}
 
 	main.meta = meta
 	main.scale = meta.scale

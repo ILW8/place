@@ -1,5 +1,6 @@
 {
 	"base": {
+		"timestamps": "data/2017_timestamps.json",
 		"start": 1490918688000,
 		"sizeX": 1000,
 		"sizeY": 1000,
