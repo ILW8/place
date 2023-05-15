@@ -76,22 +76,6 @@
 
 	<div class="controls">
 
-		<div class="seek-field field">
-			<span class="label">time:</span>
-			<span class="value">0</span>
-			<div class="seek bar">
-				<div class="seek pending">...loading</div>
-				<div class="cursor"></div>
-			</div>
-		</div>
-
-		<div class="rate-field field">
-			<span class="label">rate:</span>
-			<span class="value">0</span>
-			<div class="rate bar">
-				<div class="cursor"></div>
-			</div>
-		</div>
 
 		<div class="zoom pane">
 			<p id="timestamp_display"></p>
@@ -154,14 +138,12 @@
 	var { PI, sin, cos, exp, pow, random } = Math, c = (x, a, b) => x < a ? a : x > b ? b : x
 	for(var i = len -1; i >= 0; i--) img.push(img.splice(random() * len |0, 1))
 	var nd = x => 1 / (pow(PI * 2, 1/2) * (exp(2 * pow((x * 2 - 1) * 1.5, 2))))
-	var ndp = 1000, ndt = [], sum = 0, t = 0, image = new Set, pix = ctx.createImageData(cw, ch);
+	var ndp = 1000, ndt = [], sum = 0, t = 1, image = new Set, pix = ctx.createImageData(cw, ch);
 	for(var i = 0; i < ndp; i++) { sum += nd(i / ndp) * (1 / ndp); ndt.push(sum) }
 	for(var ky = 1 / sum, i = 0; i < ndp; i++) ndt[i] *= ky;
 	var nds=x=>ndn(x* ndp), ndv=x=>ndt[c(x|0,0,ndp-1)], ndn=x=>(x%1)*(ndv(x+1)-ndv(x))+ndv(x)
 
-	window.bootProgress = function(value, a) {
-		t = isFinite(value) ? c(value, 0, 1) : 0
-	}
+	bscrn.style.display = 'none'
 
 	function loop() {
 		if (t < 1) requestAnimationFrame(loop)

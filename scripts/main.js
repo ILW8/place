@@ -8,11 +8,8 @@ dom.ready(function() {
 	main.vp    = dom.one('.viewport')
 	main.cvs   = dom.one('.place')
 
-	main.vrate = dom.one('.rate-field .value')
 	main.vseek = dom.one('.seek-field .value')
 
-	main.brate = new Bar(dom.one('.rate'))
-	main.bseek = new Bar(dom.one('.seek'))
 	main.timeDisplay = document.getElementById("timestamp_display")
 
 	main.get   = new Loader
@@ -21,25 +18,17 @@ dom.ready(function() {
 
 	main.viewPositionVersion = -1
 
-	main.get.json('data/place-meta.json').defer.then(parseMeta)
+	// main.get.json('data/place-meta.json').defer.then(parseMeta)
 
-	main.bootTimer = new Timer(bootFunc).play()
 })
 
-function bootFunc() {
-	bootProgress((1 - 1e-8) * main.get.bytesLoaded / main.get.bytesTotal)
-}
-
 function init() {
-	main.bootTimer.stop()
-
-
 	main.cvs.width  = main.sizeX
 	main.cvs.height = main.sizeY
 	main.ctx = main.cvs.getContext('2d')
 	main.ctx.imageSmoothingEnabled = false
 
-	main.ctx.fillStyle = 'white'
+	main.ctx.fillStyle = 'red'
 	main.ctx.fillRect(0, 0, main.sizeX, main.sizeY)
 	main.idat = main.ctx.getImageData(0, 0, main.sizeX, main.sizeY)
 	main.grid = new Uint8Array(main.sizeX * main.sizeY)
@@ -78,11 +67,10 @@ function init() {
 }
 
 function run() {
-	bootProgress(1)
 	onresize()
 
 	main.frame = 0
-	main.brate.set(0.539685, true)
+	// main.brate.set(0.539685, true)
 	main.timer.play()
 	main.view.setDistance(16, Math.max(main.sizeX, main.sizeY) * 1.1)
 	main.view.setBorders(main.sizeX, main.sizeY, 100)
@@ -94,70 +82,70 @@ function run() {
 function tick(t) {
 	updateTransformVP()
 
-	if(main.brate.changed) {
-		main.brate.changed = false
-
-		var pos  = main.brate.position * 2 - 1
-		,   dir  = pos / Math.abs(pos)
-		,   rate = dir * Math.pow(Math.abs(pos), 3) * 5000
-
-		main.timer.rate = isNaN(dir) ? 0 : rate
-		dom.text(main.vrate, f.hround(main.timer.rate))
-	}
-
-	if(main.bseek.changed) {
-		main.bseek.changed = false
-
-		t = main.timer.time = main.bseek.position * main.hitLength
-	}
-
-
-
-
-	if(t < 0) {
-		t = main.timer.time = 0
-	}
-
-	if(t > main.hitLoaded -1) {
-		t = main.timer.time = main.hitLoaded -1
-	}
-
-	var frames = Math.round(t - main.frame)
-	if(!frames) {
-		main.bseek.set(main.frame / main.hitLength)
-		return
-	}
-
-	var hits = frames > 0 ? main.hitColors : main.hitBackwd
-	,   step = frames / Math.abs(frames)
-	,   end = main.frame + frames
-
-	let updateTimestamp = -1;
-	for(var i = main.frame; i !== end; i += step) {
-		main.grid[main.hitCoords[i]] = hits[i]
-		if (main.timestamps.hasOwnProperty(i)) {
-			updateTimestamp = main.timestamps[i];
-		}
-	}
-	main.frame = end
-
-	if (updateTimestamp > 0) {
-		dom.text(main.timeDisplay, new Date(updateTimestamp).toISOString())
-	}
-
-	var d = main.idat.data
-	for(var i = 0; i < main.grid.length; i++) {
-		var g = main.grid[i] * 3
-		var p = i * 4
-
-		d[p +0] = main.colors[g +0]
-		d[p +1] = main.colors[g +1]
-		d[p +2] = main.colors[g +2]
-	}
-	main.ctx.putImageData(main.idat, 0, 0)
-
-	main.bseek.set(main.frame / main.hitLength)
-	dom.text(main.vseek, main.frame)
+	// if(main.brate.changed) {
+	// 	main.brate.changed = false
+	//
+	// 	var pos  = main.brate.position * 2 - 1
+	// 	,   dir  = pos / Math.abs(pos)
+	// 	,   rate = dir * Math.pow(Math.abs(pos), 3) * 5000
+	//
+	// 	main.timer.rate = isNaN(dir) ? 0 : rate
+	// 	dom.text(main.vrate, f.hround(main.timer.rate))
+	// }
+	//
+	// if(main.bseek.changed) {
+	// 	main.bseek.changed = false
+	//
+	// 	t = main.timer.time = main.bseek.position * main.hitLength
+	// }
+	//
+	//
+	//
+	//
+	// if(t < 0) {
+	// 	t = main.timer.time = 0
+	// }
+	//
+	// if(t > main.hitLoaded -1) {
+	// 	t = main.timer.time = main.hitLoaded -1
+	// }
+	//
+	// var frames = Math.round(t - main.frame)
+	// if(!frames) {
+	// 	main.bseek.set(main.frame / main.hitLength)
+	// 	return
+	// }
+	//
+	// var hits = frames > 0 ? main.hitColors : main.hitBackwd
+	// ,   step = frames / Math.abs(frames)
+	// ,   end = main.frame + frames
+	//
+	// let updateTimestamp = -1;
+	// for(var i = main.frame; i !== end; i += step) {
+	// 	main.grid[main.hitCoords[i]] = hits[i]
+	// 	if (main.timestamps.hasOwnProperty(i)) {
+	// 		updateTimestamp = main.timestamps[i];
+	// 	}
+	// }
+	// main.frame = end
+	//
+	// if (updateTimestamp > 0) {
+	// 	dom.text(main.timeDisplay, new Date(updateTimestamp).toISOString())
+	// }
+	//
+	// var d = main.idat.data
+	// for(var i = 0; i < main.grid.length; i++) {
+	// 	var g = main.grid[i] * 3
+	// 	var p = i * 4
+	//
+	// 	d[p +0] = main.colors[g +0]
+	// 	d[p +1] = main.colors[g +1]
+	// 	d[p +2] = main.colors[g +2]
+	// }
+	// main.ctx.putImageData(main.idat, 0, 0)
+	//
+	// main.bseek.set(main.frame / main.hitLength)
+	// dom.text(main.vseek, main.frame)
 }
 
 function onresize() {
@@ -256,7 +244,8 @@ function parseMeta(data) {
 	main.gridTemp = new Uint8Array(main.sizeX * main.sizeY)
 	main.gridTemp.fill(main.meta.colors.indexOf('#FFFFFF'))
 
-	downloadChunk(0)
+	// downloadChunk(0)
+	// dom.one('.pending', main.bseek.element).style.display = 'none';
 	main.get.ready(init)
 }
 
@@ -275,46 +264,4 @@ function fillColors(result, colors) {
 		result[index * 3 + 1] = parsed[1]
 		result[index * 3 + 2] = parsed[2]
 	})
-}
-
-function downloadChunk(index) {
-	var chunk = main.meta.chunks[index]
-	if (!chunk) return
-
-	main.get.buffer(chunk.path).defer.then(data => {
-		decode(chunk, data)
-		downloadChunk(index + 1)
-	})
-}
-
-function decode(chunk, data) {
-	var step = chunk.format.reduce(f.sum)
-	var size = data.byteLength
-	var hits = Math.min(chunk.points, Math.floor(size / step * 8))
-	var offset = main.hitLoaded
-	var [sx, sy, sc] = chunk.format
-	var bin = new BitReader(new Uint8Array(data))
-
-	for(var i = 0; i < hits; i++) {
-		var x = bin.read(sx)
-		var y = bin.read(sy)
-		var c = bin.read(sc)
-
-		var p = x + y * main.sizeX
-		var k = i + offset
-
-		main.hitColors[k] = c
-		main.hitCoords[k] = p
-		main.hitBackwd[k] = main.gridTemp[p]
-
-		main.gridTemp[p] = c
-	}
-
-	main.hitLoaded += hits
-
-	var pending = Math.max(0, (main.hitLength - main.hitLoaded) / main.hitLength)
-	var elem = dom.one('.pending', main.bseek.element)
-
-	elem.style.width = (pending * 100) +'%'
-	elem.style.display = pending ? 'block' : 'none'
 }
