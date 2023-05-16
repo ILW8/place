@@ -23,12 +23,13 @@
 
 			'scripts/Bar.js',
 			'scripts/Viewport.js',
+			'scripts/reconnecting-websockets.min.js',
 			'scripts/main.js'
 		]
-		var styles = [
+		const styles = [
 			'styles/main.css',
 			'styles/place.css'
-		]
+		];
 
 		var first = document.getElementsByTagName('script')[0]
 		function add_script(src, callback) {
@@ -64,7 +65,7 @@
 
 <body>
 	<div class="viewport absmid">
-		<canvas class="place"></div>
+		<canvas class="place"></canvas>
         <!--
 		<div class="point cp"></div>
 		<div class="point tl"></div>
@@ -75,11 +76,7 @@
 	</div>
 
 	<div class="controls">
-
-
 		<div class="zoom pane">
-			<p id="timestamp_display"></p>
-
 			<canvas width="28" height="28" class="hand button zoom-in"></canvas>
 			<canvas width="28" height="28" class="hand button zoom-out"></canvas>
 			<canvas width="28" height="28" class="hand button zoom-fit"></canvas>

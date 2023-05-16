@@ -1,43 +1,76 @@
 var main = {}
+const LOAD_FULL_THRESHOLD_MS = 120_000;
 
-// var vec3 = glMatrix.vec3
-// var mat4 = glMatrix.mat4
 
 dom.ready(function() {
 
 	main.vp    = dom.one('.viewport')
 	main.cvs   = dom.one('.place')
-
-	main.vseek = dom.one('.seek-field .value')
-
-	main.timeDisplay = document.getElementById("timestamp_display")
+	main.img   = new Image();
 
 	main.get   = new Loader
 	main.timer = new Timer(tick)
 	main.view  = new Viewport(main.vp)
 
+	main.lastFullImage = new Date(0);
+
 	main.viewPositionVersion = -1
 
-	// main.get.json('data/place-meta.json').defer.then(parseMeta)
+	init();
 
 })
 
 function init() {
+	main.socket = new ReconnectingWebSocket('wss://btmc.live:32727/ws');
+
+	main.socket.onopen = () => {
+		console.log('Successfully Connected');
+	};
+
+	main.socket.onclose = event => {
+		console.log('Socket Closed Connection: ', event);
+		main.socket.send('Client Closed!');
+	};
+
+	main.socket.onerror = error => { console.log('Socket Error: ', error); };
+
+
+	main.socket.onmessage = event => {
+		let data = event.data;
+		if (data.startsWith('partial|')) {
+			console.log(`Got a partial update: ${data.split('|')[1]}`)
+			main.img.src = data.split('|')[1]
+			return;
+		}
+
+		if ((new Date() - main.lastFullImage) > LOAD_FULL_THRESHOLD_MS && data.startsWith('full|')) {
+			console.log(`Got a full canvas: ${data.split('|')[1]}`)
+			main.img.src = data.split('|')[1]
+			main.lastFullImage = new Date()
+		}
+	};
+
+	main.scale = 2
+	main.sizeX = 1000
+	main.sizeY = 1000
+	main.meta = {}
+
 	main.cvs.width  = main.sizeX
 	main.cvs.height = main.sizeY
 	main.ctx = main.cvs.getContext('2d')
 	main.ctx.imageSmoothingEnabled = false
 
-	main.ctx.fillStyle = 'red'
+	main.img.crossOrigin = "anonymous";
+	main.img.src = "https://cuno-do-spaces.ams3.digitaloceanspaces.com/mcplace/latest.png"
+	main.img.onload = function () {
+		main.ctx.drawImage(main.img, 0, 0, main.img.width, main.img.height);
+	}
+
+	main.ctx.fillStyle = '#727272'
 	main.ctx.fillRect(0, 0, main.sizeX, main.sizeY)
 	main.idat = main.ctx.getImageData(0, 0, main.sizeX, main.sizeY)
-	main.grid = new Uint8Array(main.sizeX * main.sizeY)
-	main.grid.fill(main.meta.startcolor || 0)
-
 
 	dom.on('resize', window, onresize)
-	dom.on('keydown', window, onkey)
-	dom.on('keyup', window, onkey)
 
 	var zin  = dom.one('.zoom-in')
 	,   zout = dom.one('.zoom-out')
@@ -69,8 +102,6 @@ function init() {
 function run() {
 	onresize()
 
-	main.frame = 0
-	// main.brate.set(0.539685, true)
 	main.timer.play()
 	main.view.setDistance(16, Math.max(main.sizeX, main.sizeY) * 1.1)
 	main.view.setBorders(main.sizeX, main.sizeY, 100)
@@ -81,101 +112,10 @@ function run() {
 
 function tick(t) {
 	updateTransformVP()
-
-	// if(main.brate.changed) {
-	// 	main.brate.changed = false
-	//
-	// 	var pos  = main.brate.position * 2 - 1
-	// 	,   dir  = pos / Math.abs(pos)
-	// 	,   rate = dir * Math.pow(Math.abs(pos), 3) * 5000
-	//
-	// 	main.timer.rate = isNaN(dir) ? 0 : rate
-	// 	dom.text(main.vrate, f.hround(main.timer.rate))
-	// }
-	//
-	// if(main.bseek.changed) {
-	// 	main.bseek.changed = false
-	//
-	// 	t = main.timer.time = main.bseek.position * main.hitLength
-	// }
-	//
-	//
-	//
-	//
-	// if(t < 0) {
-	// 	t = main.timer.time = 0
-	// }
-	//
-	// if(t > main.hitLoaded -1) {
-	// 	t = main.timer.time = main.hitLoaded -1
-	// }
-	//
-	// var frames = Math.round(t - main.frame)
-	// if(!frames) {
-	// 	main.bseek.set(main.frame / main.hitLength)
-	// 	return
-	// }
-	//
-	// var hits = frames > 0 ? main.hitColors : main.hitBackwd
-	// ,   step = frames / Math.abs(frames)
-	// ,   end = main.frame + frames
-	//
-	// let updateTimestamp = -1;
-	// for(var i = main.frame; i !== end; i += step) {
-	// 	main.grid[main.hitCoords[i]] = hits[i]
-	// 	if (main.timestamps.hasOwnProperty(i)) {
-	// 		updateTimestamp = main.timestamps[i];
-	// 	}
-	// }
-	// main.frame = end
-	//
-	// if (updateTimestamp > 0) {
-	// 	dom.text(main.timeDisplay, new Date(updateTimestamp).toISOString())
-	// }
-	//
-	// var d = main.idat.data
-	// for(var i = 0; i < main.grid.length; i++) {
-	// 	var g = main.grid[i] * 3
-	// 	var p = i * 4
-	//
-	// 	d[p +0] = main.colors[g +0]
-	// 	d[p +1] = main.colors[g +1]
-	// 	d[p +2] = main.colors[g +2]
-	// }
-	// main.ctx.putImageData(main.idat, 0, 0)
-	//
-	// main.bseek.set(main.frame / main.hitLength)
-	// dom.text(main.vseek, main.frame)
 }
 
 function onresize() {
 
-}
-
-function onkey(e) {
-	if(!kbd.changed) return
-
-	var hk = true
-	switch(kbd.key) {
-		case 'SPACE':
-			if(kbd.down) main.timer.running ? main.timer.stop() : main.timer.play()
-		break
-
-		case 'ALT':
-			main.timer.rate = Math.abs(main.timer.rate) * (e.altKey ? -1 : 1)
-		break
-
-		case 'r':
-			if(!kbd.down || e.ctrlKey) return
-			main.timer.time = 0
-		break
-
-		default:
-			hk = false
-		break
-	}
-
-	if(hk) e.preventDefault()
 }
 
 function zoom(s) {
@@ -214,40 +154,6 @@ function updateTransformVP() {
 	}
 }
 
-function parseTimestamps(data) {
-	main.timestamps = data
-}
-
-function parseMeta(data) {
-	var key = new URLSearchParams(location.search).get("d")
-	var meta = data[key] || data["2022"]
-
-	if (meta.hasOwnProperty("timestamps")) {
-		main.get.json(meta["timestamps"]).defer.then(parseTimestamps)
-	} else {
-		main.timestamps = {}
-	}
-
-	main.meta = meta
-	main.scale = meta.scale
-	main.sizeX = meta.sizeX
-	main.sizeY = meta.sizeY
-	main.colors = new Uint8Array(meta.colors.length * 3)
-	fillColors(main.colors, meta.colors)
-
-	main.hitLength = meta.points
-	main.hitLoaded = 0
-	main.hitCoords = new Uint32Array(meta.points)
-	main.hitColors = new Uint8Array(meta.points)
-	main.hitBackwd = new Uint8Array(meta.points)
-
-	main.gridTemp = new Uint8Array(main.sizeX * main.sizeY)
-	main.gridTemp.fill(main.meta.colors.indexOf('#FFFFFF'))
-
-	// downloadChunk(0)
-	// dom.one('.pending', main.bseek.element).style.display = 'none';
-	main.get.ready(init)
-}
 
 function parseColor(color) {
 	var r = parseInt(color.slice(1, 3), 16)
