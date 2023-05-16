@@ -8,7 +8,6 @@ dom.ready(function() {
 	main.cvs   = dom.one('.place')
 	main.img   = new Image();
 
-	main.get   = new Loader
 	main.timer = new Timer(tick)
 	main.view  = new Viewport(main.vp)
 
@@ -17,7 +16,6 @@ dom.ready(function() {
 	main.viewPositionVersion = -1
 
 	init();
-
 })
 
 function init() {
