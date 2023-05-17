@@ -254,7 +254,7 @@ function parseMeta(data) {
 	main.hitBackwd = new Uint8Array(meta.points)
 
 	main.gridTemp = new Uint8Array(main.sizeX * main.sizeY)
-	main.gridTemp.fill(main.meta.colors.indexOf('#FFFFFF'))
+	main.gridTemp.fill(main.meta.startcolor)
 
 	downloadChunk(0)
 	main.get.ready(init)
